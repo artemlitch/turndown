@@ -1,68 +1,67 @@
 /*
  * Set up window for Node.js
  */
-
-var root = (typeof window !== 'undefined' ? window : {})
+import domino from '../node_modules/domino';
+const root = (typeof window !== 'undefined' ? window : {});
 
 /*
  * Parsing HTML strings
  */
 
 function canParseHTMLNatively () {
-  var Parser = root.DOMParser
-  var canParse = false
+  const Parser = root.DOMParser;
+  let canParse = false;
 
   // Adapted from https://gist.github.com/1129031
   // Firefox/Opera/IE throw errors on unsupported types
   try {
     // WebKit returns null on unsupported types
     if (new Parser().parseFromString('', 'text/html')) {
-      canParse = true
+      canParse = true;
     }
   } catch (e) {}
 
-  return canParse
+  return canParse;
 }
 
 function createHTMLParser () {
-  var Parser = function () {}
+  const Parser = function () {};
 
   if (process.browser) {
     if (shouldUseActiveX()) {
       Parser.prototype.parseFromString = function (string) {
-        var doc = new window.ActiveXObject('htmlfile')
-        doc.designMode = 'on' // disable on-page scripts
-        doc.open()
-        doc.write(string)
-        doc.close()
-        return doc
-      }
+        const doc = new window.ActiveXObject('htmlfile');
+        doc.designMode = 'on'; // disable on-page scripts
+        doc.open();
+        doc.write(string);
+        doc.close();
+        return doc;
+      };
     } else {
       Parser.prototype.parseFromString = function (string) {
-        var doc = document.implementation.createHTMLDocument('')
-        doc.open()
-        doc.write(string)
-        doc.close()
-        return doc
-      }
+        const doc = document.implementation.createHTMLDocument('');
+        doc.open();
+        doc.write(string);
+        doc.close();
+        return doc;
+      };
     }
   } else {
-    var domino = require('domino')
     Parser.prototype.parseFromString = function (string) {
       return domino.createDocument(string)
-    }
+    };
   }
-  return Parser
+  return Parser;
 }
 
 function shouldUseActiveX () {
-  var useActiveX = false
+  let useActiveX = false;
   try {
-    document.implementation.createHTMLDocument('').open()
+    document.implementation.createHTMLDocument('').open();
   } catch (e) {
-    if (window.ActiveXObject) useActiveX = true
+    if (window.ActiveXObject) { useActiveX = true; }
   }
-  return useActiveX
+  return useActiveX;
 }
 
-export default canParseHTMLNatively() ? root.DOMParser : createHTMLParser()
+export default canParseHTMLNatively() ? root.DOMParser : createHTMLParser();
